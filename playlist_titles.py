@@ -1,12 +1,19 @@
 # -*- coding: utf-8 -*-
 # script based on code samples taken from the doc
-# https://developers.google.com/explorer-help/guides/code_samples#python
+# https://developers.google.com/youtube/v3/docs
 
 import os, json, sys, re
+import pytube
 
 import google_auth_oauthlib.flow
 import googleapiclient.discovery
 import googleapiclient.errors
+
+
+def Download_Playlist(playlist, dl_folder):
+    youtube_address = "https://www.youtube.com/watch?v="
+
+
 
 def create_client() :
     # os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
@@ -25,6 +32,7 @@ def create_client() :
 def get_pl_name(ytb, id) :
     playlist_details = ytb.playlists().list(part="snippet", id=id).execute()
     pl_name = playlist_details["items"][0]["snippet"]["title"]
+    # returning the playlist name without problematic characters
     return re.sub("\/|\\|<|>|:|\"|\||\?|\*", "_", pl_name)
 
 def search(final_list, ytb, Id, nextPageToken=None) :
@@ -40,7 +48,6 @@ def search(final_list, ytb, Id, nextPageToken=None) :
     )
     playlist_details = request.execute()
     # https://developers.google.com/youtube/v3/docs/playlistItems <-- an example response
-
     for video in playlist_details["items"] :
         #gathering basic infos from the initial response
         title = video["snippet"]["title"]
@@ -55,14 +62,21 @@ def search(final_list, ytb, Id, nextPageToken=None) :
         channel_title = video_details["items"][0]["snippet"]["channelTitle"]
         publication_date = video_details["items"][0]["snippet"]["publishedAt"]
         stats = video_details["items"][0]["statistics"]
-        print(f"{title} ////// {channel_title} ////// {stats['viewCount']}")
-        tuple = {"title" : title,
+        ID = video_details["items"][0]["id"]
+        video_details = {"title" : title,
+                "videoId" : ID,
                 "channel_title" : channel_title,
                 "publication_date" : publication_date,
                 "stats" : stats
                 }
-        if tuple not in final_list :
-            final_list.append(tuple)
+        #we don't take into account the evolution of stats to avoid upadating the whole playlist everytime
+        video_IDs = [video["videoId"] for video in final_list]
+        if video_details["videoId"] not in video_IDs :
+            print(f"{title} ////// {channel_title} ////// {stats['viewCount']}")
+            final_list.append(video_details)
+        else :
+            # by default, playlist is ordered by newest additions. If a video is found in final_list, there is no need to search further
+            return final_list
     try:
         search(final_list, ytb, Id, nextPageToken=playlist_details["nextPageToken"])
     except Exception as e: #should happen only when there is no more next page
@@ -76,14 +90,22 @@ def update(playlistId):
     #writting to current directory and printing the path later
     pl_file = os.path.join(os.getcwd(), f"{playlist_name}.txt")
     try :
-        with open(pl_file, "w+", encoding="utf-8") as file :
+        with open(pl_file, "r", encoding="utf-8") as file :
             final_list = json.load(file)
+    except FileNotFoundError:
+        print(f"\nCreating {pl_file}\n")
+        open(pl_file, 'w+').close()
+        final_list = []
     except json.decoder.JSONDecodeError: #if the file is empty
+        print(f"\nPlaylist file {pl_file} was empty, let's fill it\n")
         final_list = []
 
+    size_before = len(final_list)
     #writting data into final_list
     search(final_list, youtube, playlistId)
-    print(f"There are {len(final_list)} videos in the playlist")
+    size_after = len(final_list)
+    print(f"\nThere are {size_after} videos in the playlist, \
+{size_after-size_before} videos have been added since last update\n")
 
     with open(pl_file, "w+", encoding="utf-8") as file :
         file.write(json.dumps(final_list, indent=2))
@@ -96,7 +118,6 @@ def statistfy(p_file):
     except Exception as e :
         print(e)
         return False
-
     freq_channels = {}
     artists = {}
     missing = []
@@ -137,9 +158,11 @@ def statistfy(p_file):
         else :
             freq_channels[channel_title] +=1
 
+    # sorting the artists by the most amount of videos in the playlist
     artists = sorted(artists.items(), key=lambda item : item[1], reverse=True)
     i = 0
     print("\n---------------------------------------\n\nMost frequent artists in the playlist : \n")
+    # printing all artists appearing more than 2 times in the playlist
     while artists[i][1] >= 3 :
         print(f"{str(artists[i][1]).rjust(5)} /// {artists[i][0]}")
         i += 1
@@ -152,10 +175,12 @@ def statistfy(p_file):
     a = True
     i = 0
     print("Channels appearing more than once : ")
+    # plot_channels(freq_channels)
     while freq_channels[i][1] > 1 and i < len(freq_channels)-1 :
         print(f"{str(freq_channels[i][1]).rjust(5)} /// {freq_channels[i][0]}")
         i += 1
 
+    print(f"There are {len(final_list)} tracks in the playlist")
 
 def main():
     if len(sys.argv) <= 1 :
