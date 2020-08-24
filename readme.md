@@ -1,11 +1,11 @@
 # Youtube Playlist Titles
 ## An implementation of the Youtube Data API
 
-The idea for this project is to be able to download informations regarding a given YouTube playlist and to keep trace of all the tracks within (it happens that due to copyright, some videos are deleted). As a music lover, it's always disapointing to see that some tracks got lost but have no way to find wihch ones.
+The idea for this project is to be able to download informations regarding a given YouTube playlist and to keep trace of all the tracks within (it happens that due to copyright, some videos are deleted). As a music lover, it's always disapointing to see that some tracks got lost but have no way to find which ones.
 
 To keep track of the tracks, a playlist file is created with all basics informations regarding every video. This file is a big list that can only be appended at each update, so no track are losts anymore.
 
-First idea
+First idea was to investigate the playlist and produce some stats such as "most frequent artist" or "most frequent YouTube channel".
 
 Secondary functions came quite naturally : downloading the playlist and updating the local "windows media player" playlist
 
