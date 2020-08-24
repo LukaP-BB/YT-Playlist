@@ -31,9 +31,7 @@ py -3 main.py stats <your_playlist_file.txt>
 ```
 
 Two positional arguments are accepted and mandatory :
-    update
-        With update, you need to provide a YouTube playlist id
-        and if you want to download this playlist (highest audio stream available, .webm format)
-        add the "dl" argument at the end
-    stats
-        With stats, you need to provide the path (absolute or relative) to a playlist file (.txt) previously created in "userdata"
+- update
+  - With update, you need to provide a YouTube playlist id and if you want to download this playlist (highest audio stream available, .webm format) add the "dl" argument at the end
+  - stats
+- With stats, you need to provide the path (absolute or relative) to a playlist file (.txt) previously created in "userdata"
