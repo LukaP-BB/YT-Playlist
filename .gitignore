@@ -1,5 +1,6 @@
-*.txt
-*.json
+userdata
+secrets
 *.webm
 *.png
 *.mp3
+test*

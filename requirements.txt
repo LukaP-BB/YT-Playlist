@@ -1,0 +1,8 @@
+beautifulsoup4==4.9.1
+google-api-core==1.22.0
+google-api-python-client==1.10.0
+google-auth==1.20.1
+google-auth-httplib2==0.0.4
+google-auth-oauthlib==0.4.1
+googleapis-common-protos==1.52.0
+pytube3==9.6.4
